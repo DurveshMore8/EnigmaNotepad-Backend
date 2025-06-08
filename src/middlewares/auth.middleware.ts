@@ -15,15 +15,26 @@ export const authenticateJWT = (
   res: Response,
   next: NextFunction
 ): any => {
-  const authHeader = req.headers.authorization;
+  let token: string | undefined;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  // Check for token in cookies
+  if (req.cookies?.token) {
+    token = req.cookies.token;
+  }
+
+  // Fallback: check Authorization header
+  else if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
     return res
       .status(401)
       .json({ message: "Unauthorized: No token provided." });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, env.jwtSecret) as JwtPayload;
