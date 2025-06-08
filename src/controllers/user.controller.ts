@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import env from "../config/env";
 import UserModel from "../models/user.model";
+import { encryptUserKey, generateUserEncryptionKey } from "../utils/userKey";
 
 export const registerUser = async (
   req: Request,
@@ -24,10 +25,14 @@ export const registerUser = async (
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const rawUserKey = generateUserEncryptionKey();
+    const encryptedUserKey = encryptUserKey(rawUserKey);
+
     const user = new UserModel({
       email,
       password: hashedPassword,
       name,
+      encryptionKey: encryptedUserKey,
     });
 
     await user.save();

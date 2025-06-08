@@ -4,7 +4,6 @@ import env from "../config/env";
 
 interface JwtPayload {
   userId: string;
-  email: string;
 }
 
 export interface AuthenticatedRequest extends Request {
