@@ -1,13 +1,16 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import FileModel from "../models/file.model";
+import UserModel from "../models/user.model";
 import { decryptText, encryptText } from "../utils/encryption";
+import { decryptUserKey } from "../utils/userKey";
 
 export const createFile = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<any> => {
   try {
+    const userId = req.user?.userId;
     const { title, content } = req.body;
 
     if (!title || !content) {
@@ -16,12 +19,17 @@ export const createFile = async (
         .json({ message: "Title and content are required." });
     }
 
-    const encrypted = encryptText(content);
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const userKey = decryptUserKey(user.encryptionKey);
+
+    const encryptedContent = encryptText(content, userKey);
 
     const newFile = await FileModel.create({
-      user: req.user?.userId,
+      user: userId,
       title,
-      content: encrypted,
+      content: encryptedContent,
     });
 
     return res.status(201).json({ message: "File created.", file: newFile });
@@ -67,7 +75,12 @@ export const getFile = async (
       return res.status(404).json({ message: "File not found" });
     }
 
-    const decryptedContent = decryptText(file.content);
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const userKey = decryptUserKey(user.encryptionKey);
+
+    const decryptedContent = decryptText(file.content, userKey);
 
     return res.status(200).json({
       title: file.title,
