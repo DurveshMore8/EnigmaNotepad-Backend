@@ -102,6 +102,16 @@ export const patchFile = async (
   const updates = req.body;
 
   try {
+    // If content is being updated, encrypt it first
+    if (updates.content) {
+      const userId = req.user?.userId;
+      const user = await UserModel.findById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const userKey = decryptUserKey(user.encryptionKey);
+      updates.content = encryptText(updates.content, userKey);
+    }
+
     const updatedFile = await FileModel.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true,
@@ -128,9 +138,16 @@ export const updateFile = async (
   const { title, content } = req.body;
 
   try {
+    const userId = req.user?.userId;
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const userKey = decryptUserKey(user.encryptionKey);
+    const encryptedContent = encryptText(content, userKey);
+
     const updatedFile = await FileModel.findByIdAndUpdate(
       id,
-      { title, content },
+      { title, content: encryptedContent },
       { new: true }
     );
 
