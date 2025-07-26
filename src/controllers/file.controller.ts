@@ -93,3 +93,76 @@ export const getFile = async (
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+export const patchFile = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<any> => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  try {
+    const updatedFile = await FileModel.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedFile) {
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    res
+      .status(200)
+      .json({ message: "File updated successfully", file: updatedFile });
+  } catch (error) {
+    console.error("PATCH Error:", error);
+    res.status(500).json({ message: "Failed to update file." });
+  }
+};
+
+export const updateFile = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<any> => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+
+  try {
+    const updatedFile = await FileModel.findByIdAndUpdate(
+      id,
+      { title, content },
+      { new: true }
+    );
+
+    if (!updatedFile) {
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    res
+      .status(200)
+      .json({ message: "File updated successfully", file: updatedFile });
+  } catch (error) {
+    console.error("Update Error:", error);
+    res.status(500).json({ message: "Failed to update file." });
+  }
+};
+
+export const deleteFile = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<any> => {
+  const { id } = req.params;
+
+  try {
+    const deletedFile = await FileModel.findByIdAndDelete(id);
+
+    if (!deletedFile) {
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("Delete Error:", error);
+    res.status(500).json({ message: "Failed to delete file." });
+  }
+};
