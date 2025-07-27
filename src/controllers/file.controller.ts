@@ -50,7 +50,15 @@ export const getFileList = async (
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const files = await FileModel.find({ user: userId }).select(
+    const searchText = req.query.searchText as string | undefined;
+
+    const query: any = { user: userId };
+
+    if (searchText && searchText.trim() !== "") {
+      query.title = { $regex: searchText, $options: "i" };
+    }
+
+    const files = await FileModel.find(query).select(
       "title createdAt updatedAt"
     );
 
