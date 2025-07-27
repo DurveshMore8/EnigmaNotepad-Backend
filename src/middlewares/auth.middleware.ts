@@ -17,13 +17,9 @@ export const authenticateJWT = (
 ): any => {
   let token: string | undefined;
 
-  // Check for token in cookies
   if (req.cookies?.token) {
     token = req.cookies.token;
-  }
-
-  // Fallback: check Authorization header
-  else if (
+  } else if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer ")
   ) {
