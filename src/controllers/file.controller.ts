@@ -110,7 +110,6 @@ export const patchFile = async (
   const updates = req.body;
 
   try {
-    // If content is being updated, encrypt it first
     if (updates.content) {
       const userId = req.user?.userId;
       const user = await UserModel.findById(userId);
