@@ -16,7 +16,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://enigmanotepad.vercel.app/login"
+        ? "https://enigmanotepad.vercel.app"
         : "http://localhost:3000",
     credentials: true,
   })
